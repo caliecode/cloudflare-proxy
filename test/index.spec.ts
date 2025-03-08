@@ -37,7 +37,7 @@ beforeEach(() => {
 			status: 200,
 			headers: {
 				'Content-Type': 'application/json',
-				'Set-Cookie': 'auth_token=abc123; Path=/; Domain=your-app-name.fly.dev; SameSite=Lax; Secure'
+				'Set-Cookie': 'auth_token=abc123; Path=/; Domain=laclipasa-backend.fly.dev; SameSite=Lax; Secure'
 			}
 		});
 	});
@@ -46,7 +46,7 @@ beforeEach(() => {
 		status: 200,
 		headers: {
 			'Content-Type': 'application/json',
-			'Set-Cookie': 'auth_token=abc123; Path=/; Domain=your-app-name.fly.dev; SameSite=Lax; Secure'
+			'Set-Cookie': 'auth_token=abc123; Path=/; Domain=laclipasa-backend.fly.dev; SameSite=Lax; Secure'
 		}
 	});
 });
@@ -62,16 +62,16 @@ describe('Reverse Proxy Worker', () => {
 		const response = await worker.fetch(request, env, ctx);
 		// Wait for all `Promise`s passed to `ctx.waitUntil()` to settle before running test assertions
 		await waitOnExecutionContext(ctx);
-		expect(await response.text()).toMatchInlineSnapshot(`"This is a proxy worker. API requests should be sent to /api/..."`);
+		expect(await response.text()).toMatchInlineSnapshot(`"This is a proxy worker. API requests should be sent to /fly-api/..."`);
 	});
 
 	it('responds with default message for non-API routes (integration style)', async () => {
 		const response = await SELF.fetch('https://example.com');
-		expect(await response.text()).toMatchInlineSnapshot(`"This is a proxy worker. API requests should be sent to /api/..."`);
+		expect(await response.text()).toMatchInlineSnapshot(`"This is a proxy worker. API requests should be sent to /fly-api/..."`);
 	});
 
 	it('proxies requests to API routes', async () => {
-		const request = new IncomingRequest('http://example.com/api/users');
+		const request = new IncomingRequest('http://example.com/fly-api/users');
 		const ctx = createExecutionContext();
 
 		await worker.fetch(request, env, ctx);
@@ -79,7 +79,7 @@ describe('Reverse Proxy Worker', () => {
 
 		// Check that fetch was called with the expected URL
 		expect(mockFetchCall).not.toBeNull();
-		expect(mockFetchCall?.url).toBe('https://your-app-name.fly.dev/api/users');
+		expect(mockFetchCall?.url).toBe('https://laclipasa-backend.fly.dev/fly-api/users');
 	});
 
 	it('forwards request method, headers and body', async () => {
@@ -88,7 +88,7 @@ describe('Reverse Proxy Worker', () => {
 			'Authorization': 'Bearer token123'
 		});
 
-		const request = new IncomingRequest('http://example.com/api/data', {
+		const request = new IncomingRequest('http://example.com/fly-api/data', {
 			method: 'POST',
 			headers,
 			body: JSON.stringify({ test: true })
@@ -113,11 +113,11 @@ describe('Reverse Proxy Worker', () => {
 		// Create a response with a cookie
 		mockFetchResponse = new Response('Response with cookie', {
 			headers: {
-				'Set-Cookie': 'auth_token=abc123; Path=/; Domain=your-app-name.fly.dev; SameSite=Lax'
+				'Set-Cookie': 'auth_token=abc123; Path=/; Domain=laclipasa-backend.fly.dev; SameSite=Lax'
 			}
 		});
 
-		const request = new IncomingRequest('http://example.com/api/login');
+		const request = new IncomingRequest('http://example.com/fly-api/login');
 		const ctx = createExecutionContext();
 		const response = await worker.fetch(request, env, ctx);
 		await waitOnExecutionContext(ctx);
@@ -135,14 +135,14 @@ describe('Reverse Proxy Worker', () => {
 	it('handles multiple cookies correctly', async () => {
 		// Create a mock response with multiple cookies
 		const mockHeaders = new Headers();
-		mockHeaders.append('Set-Cookie', 'auth_token=abc123; Path=/; Domain=your-app-name.fly.dev');
-		mockHeaders.append('Set-Cookie', 'session=xyz789; Path=/; Domain=your-app-name.fly.dev');
+		mockHeaders.append('Set-Cookie', 'auth_token=abc123; Path=/; Domain=laclipasa-backend.fly.dev');
+		mockHeaders.append('Set-Cookie', 'session=xyz789; Path=/; Domain=laclipasa-backend.fly.dev');
 
 		mockFetchResponse = new Response('Response with multiple cookies', {
 			headers: mockHeaders
 		});
 
-		const request = new IncomingRequest('http://example.com/api/login');
+		const request = new IncomingRequest('http://example.com/fly-api/login');
 		const ctx = createExecutionContext();
 		const response = await worker.fetch(request, env, ctx);
 		await waitOnExecutionContext(ctx);
@@ -159,7 +159,7 @@ describe('Reverse Proxy Worker', () => {
 	});
 
 	it('adds CORS headers to the response', async () => {
-		const request = new IncomingRequest('http://example.com/api/data');
+		const request = new IncomingRequest('http://example.com/fly-api/data');
 		const ctx = createExecutionContext();
 		const response = await worker.fetch(request, env, ctx);
 		await waitOnExecutionContext(ctx);
@@ -172,7 +172,7 @@ describe('Reverse Proxy Worker', () => {
 	});
 
 	it('handles OPTIONS requests for CORS preflight', async () => {
-		const request = new IncomingRequest('http://example.com/api/data', {
+		const request = new IncomingRequest('http://example.com/fly-api/data', {
 			method: 'OPTIONS'
 		});
 
