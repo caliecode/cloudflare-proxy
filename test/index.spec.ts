@@ -79,7 +79,7 @@ describe('Reverse Proxy Worker', () => {
 
 		// Check that fetch was called with the expected URL
 		expect(mockFetchCall).not.toBeNull();
-		expect(mockFetchCall?.url).toBe('https://laclipasa-backend.fly.dev/fly-api/users');
+		expect(mockFetchCall?.url).toBe('https://laclipasa-backend.fly.dev/users');
 	});
 
 	it('forwards request method, headers and body', async () => {

@@ -21,7 +21,7 @@ export default {
  * Handles API requests by proxying them to the backend
  */
 async function handleApiRequest(request: Request, env: Env, url: URL): Promise<Response> {
-	const backendUrl = 'https://laclipasa-backend.fly.dev' + url.pathname + url.search;
+	const backendUrl = 'https://laclipasa-backend.fly.dev' + url.pathname.replace('/fly-api', '') + url.search;
 
 	const headers = new Headers(request.headers);
 
